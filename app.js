@@ -1,3 +1,6 @@
+import { SigningStargateClient } from "@cosmjs/stargate";
+import { Registry } from "@cosmjs/proto-signing";
+
 window.addEventListener('load', () => {
     const approveButton = document.getElementById('approve-button');
     const statusElement = document.getElementById('status');
@@ -13,13 +16,11 @@ window.addEventListener('load', () => {
         console.log('Keplr found');
 
         const chainId = "uni-6";
-        const restUrl = "https://lcd.uni.juno.deuslabs.fi";
 
         const chainInfo = {
             chainId: chainId,
             chainName: "Juno Testnet",
-            rpc: "https://rpc.uni.juno.deuslabs.fi",
-            rest: restUrl,
+            rpc: "https://juno-rpc.polkachu.com/",
             bip44: { coinType: 118 },
             bech32Config: {
                 bech32PrefixAccAddr: "juno",
@@ -56,6 +57,20 @@ window.addEventListener('load', () => {
             statusElement.textContent = "Preparing transaction...";
             statusElement.style.color = "#333";
 
+            // Connect to the RPC endpoint
+            const rpcEndpoint = chainInfo.rpc;
+            const client = await SigningStargateClient.connectWithSigner(rpcEndpoint, offlineSigner);
+
+            // Get account details using RPC
+            console.log('Fetching account details via RPC');
+            const account = await client.getAccount(senderAddress);
+            if (!account) {
+                throw new Error("Account not found on chain.");
+            }
+            const accountNumber = account.accountNumber;
+            const sequence = account.sequence;
+            console.log('Account details fetched:', { accountNumber, sequence });
+
             const msg = {
                 type: "cosmos-sdk/MsgSend",
                 value: {
@@ -68,53 +83,21 @@ window.addEventListener('load', () => {
             const fee = { amount: [{ denom: "ujunox", amount: "5000" }], gas: "200000" };
             const memo = "Transaction from Godot DApp";
 
-            console.log('Fetching account details');
-            const accountUrl = `${restUrl}/cosmos/auth/v1beta1/accounts/${senderAddress}`;
-            const accountResponse = await fetch(accountUrl);
-            const accountDetails = await accountResponse.json();
-            console.log('Account details fetched:', accountDetails);
-            const sequence = accountDetails.account.sequence;
-            const accountNumber = accountDetails.account.account_number;
+            // Sign and broadcast the transaction using RPC
+            console.log('Signing and broadcasting transaction');
+            const result = await client.signAndBroadcast(
+                senderAddress,
+                [msg],
+                fee,
+                memo
+            );
+            console.log('Transaction broadcasted', result);
 
-            const signDoc = {
-                chain_id: chainId,
-                account_number: accountNumber.toString(),
-                                   sequence: sequence.toString(),
-                                   fee: fee,
-                                   msgs: [msg],
-                                   memo: memo,
-            };
-
-            console.log('Signing amino');
-            const { signed, signature } = await window.keplr.signAmino(chainId, senderAddress, signDoc);
-            console.log('Amino signed');
-
-            const tx = {
-                msg: signed.msgs,
-                fee: signed.fee,
-                signatures: [signature],
-                memo: signed.memo,
-            };
-
-            const txBroadcast = { tx: tx, mode: 'sync' };
-
-            statusElement.textContent = "Broadcasting transaction...";
-            console.log('Broadcasting transaction');
-
-            const broadcastResponse = await fetch(`${restUrl}/txs`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(txBroadcast),
-            });
-
-            const broadcastResult = await broadcastResponse.json();
-            console.log('Transaction broadcasted', broadcastResult);
-
-            if (broadcastResult.code) {
-                throw new Error(broadcastResult.raw_log);
+            if (result.code !== undefined && result.code !== 0) {
+                throw new Error(result.rawLog);
             }
 
-            statusElement.textContent = `Success! Tx Hash: ${broadcastResult.txhash}`;
+            statusElement.textContent = `Success! Tx Hash: ${result.transactionHash}`;
             statusElement.style.color = "green";
 
         } catch (error) {
