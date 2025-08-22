@@ -1,6 +1,3 @@
-import { SigningStargateClient } from "@cosmjs/stargate";
-import { Registry } from "@cosmjs/proto-signing";
-
 window.addEventListener('load', () => {
     const approveButton = document.getElementById('approve-button');
     const statusElement = document.getElementById('status');
