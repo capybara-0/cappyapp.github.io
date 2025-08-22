@@ -1,5 +1,5 @@
-import { SigningStargateClient } from "https://unpkg.com/@cosmjs/stargate@0.36.0/build/index.js";
-import { Registry } from "https://unpkg.com/@cosmjs/proto-signing@0.36.0/build/index.js";
+import { SigningStargateClient } from "@cosmjs/stargate";
+import { Registry } from "@cosmjs/proto-signing";
 
 window.addEventListener('load', () => {
     const approveButton = document.getElementById('approve-button');
