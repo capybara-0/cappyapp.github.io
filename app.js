@@ -3,11 +3,14 @@ window.addEventListener('load', () => {
     const statusElement = document.getElementById('status');
 
     approveButton.addEventListener('click', async () => {
+        console.log('Approve button clicked');
         if (!window.keplr) {
             statusElement.textContent = "Error: Keplr Wallet not found.";
             statusElement.style.color = "red";
+            console.error('Keplr not found');
             return;
         }
+        console.log('Keplr found');
 
         const chainId = "uni-6";
         const restUrl = "https://lcd.uni.juno.deuslabs.fi";
@@ -33,12 +36,22 @@ window.addEventListener('load', () => {
         };
 
         try {
+            console.log('Suggesting chain');
             await window.keplr.experimentalSuggestChain(chainInfo);
-            await window.keplr.enable(chainId);
+            console.log('Chain suggested');
 
+            console.log('Enabling chain');
+            await window.keplr.enable(chainId);
+            console.log('Chain enabled');
+
+            console.log('Getting offline signer');
             const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(chainId);
+            console.log('Offline signer obtained');
+
+            console.log('Getting accounts');
             const accounts = await offlineSigner.getAccounts();
             const senderAddress = accounts[0].address;
+            console.log('Accounts obtained:', senderAddress);
 
             statusElement.textContent = "Preparing transaction...";
             statusElement.style.color = "#333";
@@ -55,23 +68,26 @@ window.addEventListener('load', () => {
             const fee = { amount: [{ denom: "ujunox", amount: "5000" }], gas: "200000" };
             const memo = "Transaction from Godot DApp";
 
-            // Fetch account details for sequence and account number
+            console.log('Fetching account details');
             const accountUrl = `${restUrl}/cosmos/auth/v1beta1/accounts/${senderAddress}`;
             const accountResponse = await fetch(accountUrl);
             const accountDetails = await accountResponse.json();
+            console.log('Account details fetched:', accountDetails);
             const sequence = accountDetails.account.sequence;
             const accountNumber = accountDetails.account.account_number;
 
             const signDoc = {
                 chain_id: chainId,
                 account_number: accountNumber.toString(),
-                sequence: sequence.toString(),
-                fee: fee,
-                msgs: [msg],
-                memo: memo,
+                                   sequence: sequence.toString(),
+                                   fee: fee,
+                                   msgs: [msg],
+                                   memo: memo,
             };
 
+            console.log('Signing amino');
             const { signed, signature } = await window.keplr.signAmino(chainId, senderAddress, signDoc);
+            console.log('Amino signed');
 
             const tx = {
                 msg: signed.msgs,
@@ -83,6 +99,7 @@ window.addEventListener('load', () => {
             const txBroadcast = { tx: tx, mode: 'sync' };
 
             statusElement.textContent = "Broadcasting transaction...";
+            console.log('Broadcasting transaction');
 
             const broadcastResponse = await fetch(`${restUrl}/txs`, {
                 method: 'POST',
@@ -91,6 +108,7 @@ window.addEventListener('load', () => {
             });
 
             const broadcastResult = await broadcastResponse.json();
+            console.log('Transaction broadcasted', broadcastResult);
 
             if (broadcastResult.code) {
                 throw new Error(broadcastResult.raw_log);
@@ -102,7 +120,7 @@ window.addEventListener('load', () => {
         } catch (error) {
             statusElement.textContent = `Error: ${error.message}`;
             statusElement.style.color = "red";
-            console.error(error);
+            console.error('An error occurred:', error);
         }
     });
 });
