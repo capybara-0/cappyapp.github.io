@@ -75,7 +75,7 @@ window.addEventListener('load', () => {
                 type: "cosmos-sdk/MsgSend",
                 value: {
                     from_address: senderAddress,
-                    to_address: "celestia1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    to_address: "celestia1jjsduzgd4euahh208rv2p53y2w5heggy5cgkh5",
                     amount: [{ denom: "utia", amount: "100" }],
                 },
             };
