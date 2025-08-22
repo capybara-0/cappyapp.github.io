@@ -15,25 +15,25 @@ window.addEventListener('load', () => {
         }
         console.log('Keplr found');
 
-        const chainId = "uni-6";
+        const chainId = "mocha-4";
 
         const chainInfo = {
             chainId: chainId,
-            chainName: "Juno Testnet",
-            rpc: "https://juno-rpc.polkachu.com/",
+            chainName: "Celestia Mocha Testnet",
+            rpc: "https://celestia-testnet-rpc.polkachu.com",
             bip44: { coinType: 118 },
             bech32Config: {
-                bech32PrefixAccAddr: "juno",
-                bech32PrefixAccPub: "junopub",
-                bech32PrefixValAddr: "junovaloper",
-                bech32PrefixValPub: "junovaloperpub",
-                bech32PrefixConsAddr: "junovalcons",
-                bech32PrefixConsPub: "junovalconspub",
+                bech32PrefixAccAddr: "celestia",
+                bech32PrefixAccPub: "celestiapub",
+                bech32PrefixValAddr: "celestiavaloper",
+                bech32PrefixValPub: "celestiavaloperpub",
+                bech32PrefixConsAddr: "celestiavalcons",
+                bech32PrefixConsPub: "celestiavalconspub",
             },
-            currencies: [{ coinDenom: "JUNOX", coinMinimalDenom: "ujunox", coinDecimals: 6 }],
-            feeCurrencies: [{ coinDenom: "JUNOX", coinMinimalDenom: "ujunox", coinDecimals: 6 }],
-            stakeCurrency: { coinDenom: "JUNOX", coinMinimalDenom: "ujunox", coinDecimals: 6 },
-            gasPriceStep: { low: 0.03, average: 0.04, high: 0.05 },
+            currencies: [{ coinDenom: "TIA", coinMinimalDenom: "utia", coinDecimals: 6 }],
+            feeCurrencies: [{ coinDenom: "TIA", coinMinimalDenom: "utia", coinDecimals: 6 }],
+            stakeCurrency: { coinDenom: "TIA", coinMinimalDenom: "utia", coinDecimals: 6 },
+            gasPriceStep: { low: 0.01, average: 0.02, high: 0.03 },
         };
 
         try {
@@ -75,12 +75,12 @@ window.addEventListener('load', () => {
                 type: "cosmos-sdk/MsgSend",
                 value: {
                     from_address: senderAddress,
-                    to_address: "juno1ws42s7arrx94gchj6t42s42eg22j82zspqjwj3",
-                    amount: [{ denom: "ujunox", amount: "100" }],
+                    to_address: "celestia1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    amount: [{ denom: "utia", amount: "100" }],
                 },
             };
 
-            const fee = { amount: [{ denom: "ujunox", amount: "5000" }], gas: "200000" };
+            const fee = { amount: [{ denom: "utia", amount: "5000" }], gas: "200000" };
             const memo = "Transaction from Godot DApp";
 
             // Sign and broadcast the transaction using RPC
